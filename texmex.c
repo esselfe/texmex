@@ -3,15 +3,18 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <math.h>
 #include <getopt.h>
 
-const char *texmex_version_string = "0.0.1.6";
+const char *texmex_version_string = "0.0.1.7";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
 	{"version", no_argument, NULL, 'V'},
 	{"bin2text", required_argument, NULL, 'B'},
 	{"text2bin", required_argument, NULL, 'b'},
+	{"hex2bin", required_argument, NULL, 'H'},
+	{"int2bin", required_argument, NULL, 'I'},
 	{"hex2int", required_argument, NULL, 'i'},
 	{"text2line", required_argument, NULL, 'l'},
 	{"hex2text", required_argument, NULL, 't'},
@@ -19,7 +22,7 @@ static const struct option long_options[] = {
 	{"text2hex", required_argument, NULL, 'x'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVB:b:i:l:t:X:x:";
+static const char *short_options = "hVB:b:H:I:i:l:t:X:x:";
 
 char *text2bin(char *text) {
 	char *str = (char *)malloc(strlen(text)*8+1);
@@ -148,6 +151,51 @@ printf("fullcard: %s\n", fullcard);
 	return val;
 }
 
+char *int2bin(unsigned int val) {
+	char *binstr = (char *)malloc(9);
+	memset(binstr, 0, 9);
+	unsigned int mask = 1, cnt = 7;
+	while (1) {
+		binstr[cnt] = (val & mask) ? '1':'0';
+		if (cnt == 0)
+			break;
+		else		
+			--cnt;
+		val >>= 1;
+	}
+	return binstr;
+}
+
+char *hex4bit2bin(char hex) {
+	char *binstr = (char *)malloc(5);
+	memset(binstr, 0, 5);
+	unsigned int val = hex2int(hex);
+	unsigned int mask = 1;
+	unsigned cnt = 3;
+	while (1) {
+		binstr[cnt] = (val & mask) ? '1':'0';
+		val >>= 1;
+		if (cnt == 0)
+			break;
+		--cnt;
+	}
+	return binstr;
+}
+
+char *hex2bin(char *hexstr) {
+	char *c = hexstr;
+	char *binstr = (char *)malloc(1024),
+		*buffer = (char *)malloc(1024);
+	memset(binstr, 0, 1024);
+	while (1) {
+		sprintf(buffer, "%s", binstr);
+		sprintf(binstr, "%s%s", buffer, hex4bit2bin(*c++));
+		if (*c == '\0')
+			break;
+	}
+	return binstr;
+}
+
 char hex2char(char hex[2]) {
 	return hex2int(hex[0])*16 + hex2int(hex[1]);
 }
@@ -201,6 +249,12 @@ int main(int argc, char **argv) {
 			break;
 		case 'B':
 			printf("%s\n", bin2text(optarg));
+			break;
+		case 'H':
+			printf("%s\n", hex2bin(optarg));
+			break;
+		case 'I':
+			printf("%s\n", int2bin(atoi(optarg)));
 			break;
 		case 'i':
 			printf("%d\n", hex2int32(optarg));
