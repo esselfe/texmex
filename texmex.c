@@ -6,7 +6,7 @@
 #include <math.h>
 #include <getopt.h>
 
-const char *texmex_version_string = "0.0.1.7";
+const char *texmex_version_string = "0.0.1.8";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -236,8 +236,17 @@ int main(int argc, char **argv) {
 			break;
 		switch (c) {
 		case 'h':
-			printf("Usage: texmex { -h/--help | -V/--version | -l/--text2line PARAGRAPH \n"
-				"    -t/--hex2text \"AFDE08fa\" | -X/--text2hex_escape TEXT | -x/--text2hex TEXT }\n");
+			printf("texmex options:\n\t-h, --help\n"
+				"\t-V, --version\n"
+				"\t-l, --text2line PARAGRAPH\n"
+				"\t-t, --hex2text \"AFDE08fa\"\n"
+				"\t-B, --bin2text 00001111\n"
+				"\t-b, --text2bin TEXT\n"
+				"\t-H, --hex2bin FFEE8844\n"
+				"\t-I, --int2bin 255\n"
+				"\t-i, --hex2int FFEE8844\n"
+				"\t-X, --text2hex_escape TEXT\n"
+				"\t-x, --text2hex TEXT }\n");
 			exit(0);
 			break;
 		case 'V':
