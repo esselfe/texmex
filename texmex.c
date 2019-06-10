@@ -6,7 +6,7 @@
 #include <math.h>
 #include <getopt.h>
 
-const char *texmex_version_string = "0.0.1.8";
+const char *texmex_version_string = "0.0.1.9";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -16,13 +16,14 @@ static const struct option long_options[] = {
 	{"hex2bin", required_argument, NULL, 'H'},
 	{"int2bin", required_argument, NULL, 'I'},
 	{"hex2int", required_argument, NULL, 'i'},
+	{"int2hex", required_argument, NULL, 'j'},
 	{"text2line", required_argument, NULL, 'l'},
 	{"hex2text", required_argument, NULL, 't'},
 	{"text2hex_escape", required_argument, NULL, 'X'},
 	{"text2hex", required_argument, NULL, 'x'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVB:b:H:I:i:l:t:X:x:";
+static const char *short_options = "hVB:b:H:I:i:j:l:t:X:x:";
 
 char *text2bin(char *text) {
 	char *str = (char *)malloc(strlen(text)*8+1);
@@ -200,6 +201,10 @@ char hex2char(char hex[2]) {
 	return hex2int(hex[0])*16 + hex2int(hex[1]);
 }
 
+void int2hex(unsigned int val) {
+	printf("%X\n", val);
+}
+
 void hex2text(char *text) {
 	char *buffer = (char *)malloc(strlen(text)+1);
 	memset(buffer, 0, strlen(text)+1);
@@ -267,6 +272,9 @@ int main(int argc, char **argv) {
 			break;
 		case 'i':
 			printf("%d\n", hex2int32(optarg));
+			break;
+		case 'j':
+			int2hex(atoi(optarg));
 			break;
 		case 'l':
 			text2line(optarg);
