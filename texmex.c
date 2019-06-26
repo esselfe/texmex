@@ -13,6 +13,7 @@ static const struct option long_options[] = {
 	{"version", no_argument, NULL, 'V'},
 	{"bin2text", required_argument, NULL, 'B'},
 	{"text2bin", required_argument, NULL, 'b'},
+	{"file2hex", required_argument, NULL, 'f'},
 	{"file2int", required_argument, NULL, 'F'},
 	{"hex2bin", required_argument, NULL, 'H'},
 	{"int2bin", required_argument, NULL, 'I'},
@@ -24,7 +25,7 @@ static const struct option long_options[] = {
 	{"text2hex", required_argument, NULL, 'x'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVB:b:F:H:I:i:j:l:t:X:x:";
+static const char *short_options = "hVB:b:F:f:H:I:i:j:l:t:X:x:";
 
 char *text2bin(char *text) {
 	char *str = (char *)malloc(strlen(text)*8+1);
@@ -70,6 +71,25 @@ char *bin2text(char *text) {
 	}
 
 	return str;
+}
+
+void file2hex(char *filename) {
+	FILE *fp = fopen(filename, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "texmex error: Cannot open %s: %s\n", filename, strerror(errno));
+		return;
+	}
+
+	int c = 0;
+	while (1) {
+		c = fgetc(fp);
+		if (c == -1)
+			break;
+		printf("%X:", c);
+		fflush(stdout);
+	}
+
+	fclose(fp);
 }
 
 void file2int(char *filename) {
@@ -267,7 +287,8 @@ int main(int argc, char **argv) {
 				"\t-t, --hex2text \"AFDE08fa\"\n"
 				"\t-B, --bin2text 00001111\n"
 				"\t-b, --text2bin TEXT\n"
-				"\t-F, --file2int FILENAME\n"
+				"\t-F, --file2hex FILENAME\n"
+				"\t-f, --file2int FILENAME\n"
 				"\t-H, --hex2bin FFEE8844\n"
 				"\t-I, --int2bin 255\n"
 				"\t-i, --hex2int FFEE8844\n"
@@ -286,6 +307,9 @@ int main(int argc, char **argv) {
 			printf("%s\n", bin2text(optarg));
 			break;
 		case 'F':
+			file2hex(optarg);
+			break;
+		case 'f':
 			file2int(optarg);
 			break;
 		case 'H':
