@@ -6,7 +6,7 @@
 #include <math.h>
 #include <getopt.h>
 
-const char *texmex_version_string = "0.0.1.10";
+const char *texmex_version_string = "0.1.10";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
