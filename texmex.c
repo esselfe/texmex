@@ -159,17 +159,15 @@ int hex2int(char hex) {
 
 int hex2int32(char *hex) {
 	char fullcard[9];
-	unsigned int numcard = strlen(hex);
-	int x = (int)numcard;
+	int x = strlen(hex)-1;
 	int val = 0, cnt;
-printf("setting fullcard\n");
-	for (cnt = 7; cnt >= 0; cnt--) {
-		if (x == -1)
+	memset(fullcard, 0, 9);
+	for (cnt = 7; cnt >= 0; cnt--, x--) {
+		if (x < 0)
 			fullcard[cnt] = '0';
 		else
-			fullcard[cnt] = hex[x--];
+			fullcard[cnt] = hex[x];
 	}
-printf("fullcard: %s\n", fullcard);
 	for (cnt = 7; cnt >= 0; cnt--) {
 		if (cnt == 7)
 			val += hex2int(fullcard[cnt]);
