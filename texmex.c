@@ -21,11 +21,14 @@ static const struct option long_options[] = {
 	{"int2hex", required_argument, NULL, 'j'},
 	{"text2line", required_argument, NULL, 'l'},
 	{"hex2text", required_argument, NULL, 't'},
+	{"signed", no_argument, NULL, 's'},
 	{"text2hex_escape", required_argument, NULL, 'X'},
 	{"text2hex", required_argument, NULL, 'x'},
 	{NULL, 0, NULL, 0}
 };
-static const char *short_options = "hVB:b:F:f:H:I:i:j:l:t:X:x:";
+static const char *short_options = "hVB:b:F:f:H:I:i:j:l:st:X:x:";
+
+unsigned int use_signed;
 
 char *text2bin(char *text) {
 	char *str = (char *)malloc(strlen(text)*8+1);
@@ -190,6 +193,39 @@ int hex2int32(char *hex) {
 	return val;
 }
 
+unsigned int hex2uint32(char *hex) {
+	char fullcard[9];
+	int x = strlen(hex)-1, cnt;
+	unsigned int val = 0;
+	memset(fullcard, 0, 9);
+	for (cnt = 7; cnt >= 0; cnt--, x--) {
+		if (x < 0)
+			fullcard[cnt] = '0';
+		else
+			fullcard[cnt] = hex[x];
+	}
+	for (cnt = 7; cnt >= 0; cnt--) {
+		if (cnt == 7)
+			val += (unsigned int)hex2int(fullcard[cnt]);
+		else if (cnt == 6)
+			val += (unsigned int)hex2int(fullcard[cnt])*16;
+		else if (cnt == 5)
+			val += (unsigned int)hex2int(fullcard[cnt])*16*16;
+		else if (cnt == 4)
+			val += (unsigned int)hex2int(fullcard[cnt])*16*16*16;
+		else if (cnt == 3)
+			val += (unsigned int)hex2int(fullcard[cnt])*16*16*16*16;
+		else if (cnt == 2)
+			val += (unsigned int)hex2int(fullcard[cnt])*16*16*16*16*16;
+		else if (cnt == 1)
+			val += (unsigned int)hex2int(fullcard[cnt])*16*16*16*16*16*16;
+		else if (cnt == 0)
+			val += (unsigned int)hex2int(fullcard[cnt])*16*16*16*16*16*16*16;
+	}
+
+	return val;
+}
+
 char *int2bin(unsigned int val) {
 	char *binstr = (char *)malloc(9);
 	memset(binstr, 0, 9);
@@ -290,6 +326,7 @@ int main(int argc, char **argv) {
 				"\t-H, --hex2bin FFEE8844\n"
 				"\t-I, --int2bin 255\n"
 				"\t-i, --hex2int FFEE8844\n"
+				"\t-s, --signed\n"
 				"\t-X, --text2hex_escape TEXT\n"
 				"\t-x, --text2hex TEXT }\n");
 			exit(0);
@@ -317,7 +354,10 @@ int main(int argc, char **argv) {
 			printf("%s\n", int2bin(atoi(optarg)));
 			break;
 		case 'i':
-			printf("%d\n", hex2int32(optarg));
+			if (use_signed)
+				printf("%d\n", hex2int32(optarg));
+			else
+				printf("%u\n", hex2uint32(optarg));
 			break;
 		case 'j':
 			int2hex(atoi(optarg));
@@ -325,6 +365,9 @@ int main(int argc, char **argv) {
 		case 'l':
 			text2line(optarg);
 			exit(0);
+			break;
+		case 's':
+			use_signed = 1;
 			break;
 		case 't':
 			hex2text(optarg);
