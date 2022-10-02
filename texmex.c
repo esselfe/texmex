@@ -28,7 +28,8 @@ static const struct option long_options[] = {
 };
 static const char *short_options = "hVB:b:F:f:H:I:i:j:l:st:X:x:";
 
-unsigned int use_signed;
+unsigned int use_signed, do_hex2int;
+char *hex2int_arg;
 
 char *text2bin(char *text) {
 	char *str = (char *)malloc(strlen(text)*8+1);
@@ -354,10 +355,8 @@ int main(int argc, char **argv) {
 			printf("%s\n", int2bin(atoi(optarg)));
 			break;
 		case 'i':
-			if (use_signed)
-				printf("%d\n", hex2int32(optarg));
-			else
-				printf("%u\n", hex2uint32(optarg));
+			do_hex2int = 1;
+			hex2int_arg = optarg;
 			break;
 		case 'j':
 			int2hex(atoi(optarg));
@@ -386,5 +385,14 @@ int main(int argc, char **argv) {
 			break;
 		}
 	}
+
+	if (do_hex2int) {
+		if (use_signed)
+			printf("%d\n", hex2int32(hex2int_arg));
+		else
+			printf("%u\n", hex2uint32(hex2int_arg));
+	}
+
+	return 0;
 }
 
