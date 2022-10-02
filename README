@@ -16,11 +16,14 @@ texmex options:
 	-V, --version            Show the program version and exit
 	-B, --bin2text           Convert long binary string to readable text
 	-b, --text2bin           Convert readable text to binary string
+	-F, --file2hex FILENAME  Convert file content to hexadecimal
+	-f, --file2int FILENAME  Convert file content to integer
 	-H, --hex2bin            Convert hexadecimal to binary string
 	-I, --int2bin            Convert decimal to binary string
 	-i, --hex2int            Convert hexadecimal to decimal
 	-j, --int2hex            Convert decimal to hexadecimal
 	-l, --text2line          Remove newlines from text
+	-s, --signed             Return signed results with hex2int
 	-t, --hex2text           Convert hexadecimal text to readable text
 	-X, --text2hex_escape    Prepend each hex with "\x" for use with 'printf'
 	-x, --text2hex           Convert readable text to hexadecimal
