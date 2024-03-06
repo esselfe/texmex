@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/select.h>
 #include <math.h>
 #include <getopt.h>
 
@@ -28,7 +29,7 @@ static const struct option long_options[] = {
 };
 static const char *short_options = "hVB:b:F:f:H:I:i:j:l:st:X:x:";
 
-unsigned int use_signed, do_hex2int;
+unsigned int use_signed, use_stdin, do_hex2int;
 char *hex2int_arg;
 
 char *text2bin(char *text) {
@@ -308,7 +309,40 @@ void text2line(char *text) {
 	free(buffer);
 }
 
+int CheckStdin(void) {
+	fd_set read_fds;
+	struct timeval timeout;
+
+	// Initialize the file descriptor set to include stdin (0)
+	FD_ZERO(&read_fds);
+	FD_SET(STDIN_FILENO, &read_fds); // STDIN_FILENO is 0
+
+	// Set timeout to 0, which makes select non-blocking
+	timeout.tv_sec = 0;  // seconds
+	timeout.tv_usec = 0; // microseconds
+
+	// Check if data is available on stdin
+	int ret = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
+
+	if (ret == -1) {
+		perror("select()");
+		exit(1);
+	} else if (ret == 0) {
+		// No data available on stdin
+		use_stdin = 0;
+	} else {
+		// There is data to process
+		use_stdin = 1;
+	}
+}
+
 int main(int argc, char **argv) {
+	CheckStdin();
+	if (use_stdin && argc > 2) {
+		printf("texmex error: Only one option can be processed for stdin.\n");
+		exit(1);
+	}
+
 	int c, cnt;
 	while (1) {
 		c = getopt_long(argc, argv, short_options, long_options, NULL);
