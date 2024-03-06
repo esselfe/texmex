@@ -1,7 +1,7 @@
 
 CC ?= gcc
 #CC ?= clang
-CFLAGS ?= -std=c11 -Wall -O2 -D_GNU_SOURCE
+CFLAGS ?= -std=c17 -Wall -O2 -D_GNU_SOURCE
 LDFLAGS ?= -lm
 PROGNAME ?= texmex
 
