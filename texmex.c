@@ -50,11 +50,11 @@ printf("texmex options:\n\t-h, --help\n"
 }
 
 char *text2bin(char *text, int len) {
-	char *str = (char *)malloc(strlen(text)*8+1);
-	memset(str, 0, strlen(text)*8+1);
+	char *str = (char *)malloc(len*8+1);
+	memset(str, 0, len*8+1);
 	char c = *text, mask = 0x80;
 	unsigned int cnt, cnt2;
-	for (cnt = 0; cnt < strlen(text); cnt++) {
+	for (cnt = 0; cnt < len; cnt++) {
 		for (c = text[cnt], cnt2 = 0; cnt2 <= 7; cnt2++) {
 			str[(cnt+1)*8-8+cnt2] = (c & mask)?'1':'0';
 			c = (c << 1);
@@ -65,10 +65,10 @@ char *text2bin(char *text, int len) {
 }
 
 char *bin2text(char *text, int len) {
-	char *str = (char *)malloc(strlen(text)/8+1);
+	char *str = (char *)malloc(len/8+1);
 	char c;
 	unsigned int cnt, cnt2, cnt3;
-	for (cnt = 0, cnt3 = 0; cnt < strlen(text); cnt+=8, cnt3++) {
+	for (cnt = 0, cnt3 = 0; cnt < len; cnt+=8, cnt3++) {
 		for (cnt2 = 0; cnt2 <= 7; cnt2++) {
 			c = text[cnt+cnt2];
 			if (c == '1') {
@@ -278,17 +278,18 @@ char *hex4bit2bin(char hex) {
 
 char *hex2bin(char *hexstr, int len) {
 	char *c = hexstr;
-	char *binstr = (char *)malloc(1024),
-		*buffer = (char *)malloc(1024);
-	memset(binstr, 0, 1024);
+	char *binstr = (char *)malloc(len*8+1);
+	memset(binstr, 0, len*8+1);
+	int cnt = 0;
 	while (1) {
-		sprintf(buffer, "%s", binstr);
-		sprintf(binstr, "%s%s", buffer, hex4bit2bin(*c++));
-		if (*c == '\0')
+		char *str = hex4bit2bin(*c++);
+		strcat(binstr, str);
+		free(str);
+		
+		++cnt;
+		if (cnt >= len)
 			break;
 	}
-	
-	free(buffer);
 	
 	return binstr;
 }
@@ -302,23 +303,25 @@ void int2hex(unsigned int val) {
 }
 
 void hex2text(char *text, int len) {
-	char *buffer = (char *)malloc(strlen(text)+1);
-	memset(buffer, 0, strlen(text)+1);
+	char *buffer = (char *)malloc(len+1);
+	memset(buffer, 0, len+1);
 	char cart[2];
 	int cnt, iter;
-	for (cnt = 0, iter = 0; cnt < strlen(text); cnt += 2, iter++) {
+	for (cnt = 0, iter = 0; cnt < len; cnt += 2, iter++) {
 		cart[0] = *(text+cnt);
 		cart[1] = *(text+cnt+1);
 		*(buffer+iter) = hex2char(cart);
 	}
 	printf("%s", buffer);
+	free(buffer);
 }
 
 void text2line(char *text, int len) {
-	char *buffer = (char *)malloc(strlen(text));
+	char *buffer = (char *)malloc(len+1);
+	memset(buffer, 0, len+1);
 
 	int cnt;
-	for (cnt = 0; cnt < strlen(text); cnt++) {
+	for (cnt = 0; cnt < len; cnt++) {
 		if (*(text+cnt) != '\n')
 			*(buffer+cnt) = *(text+cnt);
 		else
@@ -339,18 +342,27 @@ void ProcessStdin(char *option) {
 		// Based on the option, call the corresponding function
 		if (strcmp(option, "-B") == 0)
 			bin2text(chunk, bytes_read);
-		else if (strcmp(option, "-b") == 0)
-			text2bin(chunk, bytes_read);
+		else if (strcmp(option, "-b") == 0) {
+			char *str = text2bin(chunk, bytes_read);
+			printf("%s", str);
+			free(str);
+		}
 		else if (strcmp(option, "-F") == 0)
 			file2hex(chunk);
 		else if (strcmp(option, "-f") == 0)
 			file2int(chunk);
-		else if (strcmp(option, "-H") == 0)
-			hex2bin(chunk, bytes_read);
-		else if (strcmp(option, "-I") == 0)
-			int2bin(atoi(chunk));
+		else if (strcmp(option, "-H") == 0) {
+			char *str = hex2bin(chunk, bytes_read);
+			printf("%s", str);
+			free(str);
+		}
+		else if (strcmp(option, "-I") == 0) {
+			char *str = int2bin(atoi(chunk));
+			printf("%s", str);
+			free(str);
+		}
 		else if (strcmp(option, "-i") == 0)
-			hex2int32(chunk, bytes_read);
+			printf("%d", hex2int32(chunk, bytes_read));
 		else if (strcmp(option, "-l") == 0)
 			text2line(chunk, bytes_read);
 		else if (strcmp(option, "-t") == 0)
