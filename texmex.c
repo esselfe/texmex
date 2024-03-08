@@ -337,41 +337,60 @@ void ProcessStdin(char *option) {
 	char chunk[CHUNK_SIZE];
 	size_t bytes_read;
 
-	// Loop to read from stdin in chunks
-	while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0) {
-		// Based on the option, call the corresponding function
-		if (strcmp(option, "-B") == 0)
+	// Based on the option, call the corresponding function
+	if (strncmp(option, "-B", 2) == 0) {
+		// Loop to read from stdin in chunks
+		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0)
 			bin2text(chunk, bytes_read);
-		else if (strcmp(option, "-b") == 0) {
+	}
+	else if (strncmp(option, "-b", 2) == 0) {
+		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0) {
 			char *str = text2bin(chunk, bytes_read);
 			printf("%s", str);
 			free(str);
 		}
-		else if (strcmp(option, "-F") == 0)
-			file2hex(chunk);
-		else if (strcmp(option, "-f") == 0)
-			file2int(chunk);
-		else if (strcmp(option, "-H") == 0) {
+	}
+	else if (strncmp(option, "-F", 2) == 0) {
+		fread(chunk, 1, CHUNK_SIZE, stdin);
+		file2hex(chunk);
+	}
+	else if (strncmp(option, "-f", 2) == 0) {
+		fread(chunk, 1, CHUNK_SIZE, stdin);
+		file2int(chunk);
+	}
+	else if (strncmp(option, "-H", 2) == 0) {
+		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0) {
 			char *str = hex2bin(chunk, bytes_read);
 			printf("%s", str);
 			free(str);
 		}
-		else if (strcmp(option, "-I") == 0) {
-			char *str = int2bin(atoi(chunk));
-			printf("%s", str);
-			free(str);
-		}
-		else if (strcmp(option, "-i") == 0)
-			printf("%d", hex2int32(chunk, bytes_read));
-		else if (strcmp(option, "-l") == 0)
+	}
+	else if (strncmp(option, "-I", 2) == 0) {
+		fread(chunk, 1, CHUNK_SIZE, stdin);
+		char *str = int2bin(atoi(chunk));
+		printf("%s", str);
+		free(str);
+	}
+	else if (strncmp(option, "-i", 2) == 0) {
+		bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin);
+		printf("%d", hex2int32(chunk, bytes_read));
+	}
+	else if (strncmp(option, "-l", 2) == 0) {
+		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0)
 			text2line(chunk, bytes_read);
-		else if (strcmp(option, "-t") == 0)
+	}
+	else if (strncmp(option, "-t", 2) == 0) {
+		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0)
 			hex2text(chunk, bytes_read);
-		else if (strcmp(option, "-X") == 0) {
+	}
+	else if (strncmp(option, "-X", 2) == 0) {
+		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0) {
 			for (int cnt = 0; cnt < bytes_read; cnt++)
 				printf("\\x%X", chunk[cnt]);
 		}
-		else if (strcmp(option, "-x") == 0) {
+	}
+	else if (strncmp(option, "-x", 2) == 0) {
+		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0) {
 			for (int cnt = 0; cnt < bytes_read; cnt++)
 				printf("%02X", chunk[cnt]);
 		}
