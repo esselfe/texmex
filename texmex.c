@@ -32,7 +32,24 @@ static const char *short_options = "hVB:b:F:f:H:I:i:j:l:st:X:x:";
 unsigned int use_signed, use_stdin, do_hex2int;
 char *hex2int_arg;
 
-char *text2bin(char *text) {
+void ShowHelp(void) {
+printf("texmex options:\n\t-h, --help\n"
+"\t-V, --version\n"
+"\t-B, --bin2text 00001111\n"
+"\t-b, --text2bin TEXT\n"
+"\t-F, --file2hex FILENAME\n"
+"\t-f, --file2int FILENAME\n"
+"\t-H, --hex2bin FFEE8844\n"
+"\t-I, --int2bin 255\n"
+"\t-i, --hex2int FFEE8844\n"
+"\t-l, --text2line PARAGRAPH\n"
+"\t-s, --signed\n"
+"\t-t, --hex2text \"AFDE08fa\"\n"
+"\t-X, --text2hex_escape TEXT\n"
+"\t-x, --text2hex TEXT }\n");
+}
+
+char *text2bin(char *text, int len) {
 	char *str = (char *)malloc(strlen(text)*8+1);
 	memset(str, 0, strlen(text)*8+1);
 	char c = *text, mask = 0x80;
@@ -47,7 +64,7 @@ char *text2bin(char *text) {
 	return str;
 }
 
-char *bin2text(char *text) {
+char *bin2text(char *text, int len) {
 	char *str = (char *)malloc(strlen(text)/8+1);
 	char c;
 	unsigned int cnt, cnt2, cnt3;
@@ -162,7 +179,7 @@ int hex2int(char hex) {
 	return 0;
 }
 
-int hex2int32(char *hex) {
+int hex2int32(char *hex, int len) {
 	char fullcard[9];
 	int x = strlen(hex)-1;
 	int val = 0, cnt;
@@ -195,7 +212,7 @@ int hex2int32(char *hex) {
 	return val;
 }
 
-unsigned int hex2uint32(char *hex) {
+unsigned int hex2uint32(char *hex, int len) {
 	char fullcard[9];
 	int x = strlen(hex)-1, cnt;
 	unsigned int val = 0;
@@ -259,7 +276,7 @@ char *hex4bit2bin(char hex) {
 	return binstr;
 }
 
-char *hex2bin(char *hexstr) {
+char *hex2bin(char *hexstr, int len) {
 	char *c = hexstr;
 	char *binstr = (char *)malloc(1024),
 		*buffer = (char *)malloc(1024);
@@ -270,6 +287,9 @@ char *hex2bin(char *hexstr) {
 		if (*c == '\0')
 			break;
 	}
+	
+	free(buffer);
+	
 	return binstr;
 }
 
@@ -278,10 +298,10 @@ char hex2char(char hex[2]) {
 }
 
 void int2hex(unsigned int val) {
-	printf("%X\n", val);
+	printf("%X", val);
 }
 
-void hex2text(char *text) {
+void hex2text(char *text, int len) {
 	char *buffer = (char *)malloc(strlen(text)+1);
 	memset(buffer, 0, strlen(text)+1);
 	char cart[2];
@@ -291,10 +311,10 @@ void hex2text(char *text) {
 		cart[1] = *(text+cnt+1);
 		*(buffer+iter) = hex2char(cart);
 	}
-	printf("%s\n", buffer);
+	printf("%s", buffer);
 }
 
-void text2line(char *text) {
+void text2line(char *text, int len) {
 	char *buffer = (char *)malloc(strlen(text));
 
 	int cnt;
@@ -305,11 +325,57 @@ void text2line(char *text) {
 			*(buffer+cnt) = ' ';
 	}
 
-	printf("%s\n", buffer);
+	printf("%s", buffer);
 	free(buffer);
 }
 
-int CheckStdin(void) {
+#define CHUNK_SIZE 8192
+void ProcessStdin(char *option) {
+	char chunk[CHUNK_SIZE];
+	size_t bytes_read;
+
+	// Loop to read from stdin in chunks
+	while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0) {
+		// Based on the option, call the corresponding function
+		if (strcmp(option, "-B") == 0)
+			bin2text(chunk, bytes_read);
+		else if (strcmp(option, "-b") == 0)
+			text2bin(chunk, bytes_read);
+		else if (strcmp(option, "-F") == 0)
+			file2hex(chunk);
+		else if (strcmp(option, "-f") == 0)
+			file2int(chunk);
+		else if (strcmp(option, "-H") == 0)
+			hex2bin(chunk, bytes_read);
+		else if (strcmp(option, "-I") == 0)
+			int2bin(atoi(chunk));
+		else if (strcmp(option, "-i") == 0)
+			hex2int32(chunk, bytes_read);
+		else if (strcmp(option, "-l") == 0)
+			text2line(chunk, bytes_read);
+		else if (strcmp(option, "-t") == 0)
+			hex2text(chunk, bytes_read);
+		else if (strcmp(option, "-X") == 0) {
+			for (int cnt = 0; cnt < bytes_read; cnt++)
+				printf("\\x%X", chunk[cnt]);
+		}
+		else if (strcmp(option, "-x") == 0) {
+			for (int cnt = 0; cnt < bytes_read; cnt++)
+				printf("%02X", chunk[cnt]);
+		}
+	}
+	printf("\n");
+
+	// Check for errors in fread
+	if (ferror(stdin)) {
+		perror("texmex error reading from stdin");
+		exit(1);
+	}
+	
+	exit(0);
+}
+
+void CheckStdin(void) {
 	fd_set read_fds;
 	struct timeval timeout;
 
@@ -342,6 +408,13 @@ int main(int argc, char **argv) {
 		printf("texmex error: Only one option can be processed for stdin.\n");
 		exit(1);
 	}
+	else if (use_stdin && argc < 2) {
+		printf("texmex error: An option is required to process stdin data.\n");
+		ShowHelp();
+		exit(1);
+	}
+	else if (use_stdin)
+		ProcessStdin(argv[1]);
 
 	int c, cnt;
 	while (1) {
@@ -350,20 +423,7 @@ int main(int argc, char **argv) {
 			break;
 		switch (c) {
 		case 'h':
-			printf("texmex options:\n\t-h, --help\n"
-				"\t-V, --version\n"
-				"\t-l, --text2line PARAGRAPH\n"
-				"\t-t, --hex2text \"AFDE08fa\"\n"
-				"\t-B, --bin2text 00001111\n"
-				"\t-b, --text2bin TEXT\n"
-				"\t-F, --file2hex FILENAME\n"
-				"\t-f, --file2int FILENAME\n"
-				"\t-H, --hex2bin FFEE8844\n"
-				"\t-I, --int2bin 255\n"
-				"\t-i, --hex2int FFEE8844\n"
-				"\t-s, --signed\n"
-				"\t-X, --text2hex_escape TEXT\n"
-				"\t-x, --text2hex TEXT }\n");
+			ShowHelp();
 			exit(0);
 			break;
 		case 'V':
@@ -371,10 +431,10 @@ int main(int argc, char **argv) {
 			exit(0);
 			break;
 		case 'b':
-			printf("%s\n", text2bin(optarg));
+			printf("%s\n", text2bin(optarg, strlen(optarg)));
 			break;
 		case 'B':
-			printf("%s\n", bin2text(optarg));
+			printf("%s\n", bin2text(optarg, strlen(optarg)));
 			break;
 		case 'F':
 			file2hex(optarg);
@@ -383,7 +443,7 @@ int main(int argc, char **argv) {
 			file2int(optarg);
 			break;
 		case 'H':
-			printf("%s\n", hex2bin(optarg));
+			printf("%s\n", hex2bin(optarg, strlen(optarg)));
 			break;
 		case 'I':
 			printf("%s\n", int2bin(atoi(optarg)));
@@ -396,14 +456,14 @@ int main(int argc, char **argv) {
 			int2hex(atoi(optarg));
 			break;
 		case 'l':
-			text2line(optarg);
+			text2line(optarg, strlen(optarg));
 			exit(0);
 			break;
 		case 's':
 			use_signed = 1;
 			break;
 		case 't':
-			hex2text(optarg);
+			hex2text(optarg, strlen(optarg));
 			break;
 		case 'X':
 			for (cnt = 0; cnt < strlen(optarg); cnt++) {
@@ -422,9 +482,9 @@ int main(int argc, char **argv) {
 
 	if (do_hex2int) {
 		if (use_signed)
-			printf("%d\n", hex2int32(hex2int_arg));
+			printf("%d\n", hex2int32(hex2int_arg, strlen(hex2int_arg)));
 		else
-			printf("%u\n", hex2uint32(hex2int_arg));
+			printf("%u\n", hex2uint32(hex2int_arg, strlen(hex2int_arg)));
 	}
 
 	return 0;
