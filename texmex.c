@@ -7,7 +7,7 @@
 #include <math.h>
 #include <getopt.h>
 
-const char *texmex_version_string = "0.2.1";
+const char *texmex_version_string = "0.2.2";
 
 static const struct option long_options[] = {
 	{"help", no_argument, NULL, 'h'},
@@ -119,7 +119,7 @@ void file2hex(char *filename, int len) {
 
 void file2int(char *filename, int len) {
 	if (len > 0 && filename[len - 1] == '\n')
-			filename[len - 1] = '\0';
+		filename[len - 1] = '\0';
     
 	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
