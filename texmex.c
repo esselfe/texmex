@@ -403,12 +403,6 @@ void ProcessStdin(char *option) {
 	}
 	printf("\n");
 
-	// Check for errors in fread
-	if (ferror(stdin)) {
-		perror("texmex error reading from stdin");
-		exit(1);
-	}
-	
 	exit(0);
 }
 
