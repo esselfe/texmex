@@ -13,7 +13,7 @@ all: $(PROGNAME)
 	@ls -li --color=auto $(PROGNAME) 2>/dev/null || true
 
 $(PROGNAME): texmex.c
-	$(CC) $(CFLAGS) $(LDFLAGS) texmex.c -o $(PROGNAME)
+	$(CC) $(CFLAGS) texmex.c $(LDFLAGS) -o $(PROGNAME)
 
 clean:
 	@rm -v $(PROGNAME) 2>/dev/null || true
