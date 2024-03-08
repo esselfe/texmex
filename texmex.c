@@ -118,8 +118,8 @@ void file2hex(char *filename, int len) {
 }
 
 void file2int(char *filename, int len) {
-	if (filename[len - 1] == '\n')
-		filename[len - 1] = '\0';
+	if (len > 0 && filename[len - 1] == '\n')
+			filename[len - 1] = '\0';
     
 	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
