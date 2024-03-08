@@ -46,7 +46,7 @@ printf("texmex options:\n\t-h, --help\n"
 "\t-s, --signed\n"
 "\t-t, --hex2text \"AFDE08fa\"\n"
 "\t-X, --text2hex_escape TEXT\n"
-"\t-x, --text2hex TEXT }\n");
+"\t-x, --text2hex TEXT\n");
 }
 
 char *text2bin(char *text, int len) {
