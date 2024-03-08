@@ -95,7 +95,10 @@ char *bin2text(char *text, int len) {
 	return str;
 }
 
-void file2hex(char *filename) {
+void file2hex(char *filename, int len) {
+	if (filename[len - 1] == '\n')
+		filename[len - 1] = '\0';
+    
 	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
 		fprintf(stderr, "texmex error: Cannot open %s: %s\n", filename, strerror(errno));
@@ -114,7 +117,10 @@ void file2hex(char *filename) {
 	fclose(fp);
 }
 
-void file2int(char *filename) {
+void file2int(char *filename, int len) {
+	if (filename[len - 1] == '\n')
+		filename[len - 1] = '\0';
+    
 	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
 		fprintf(stderr, "texmex error: Cannot open %s: %s\n", filename, strerror(errno));
@@ -351,12 +357,12 @@ void ProcessStdin(char *option) {
 		}
 	}
 	else if (strncmp(option, "-F", 2) == 0) {
-		fread(chunk, 1, CHUNK_SIZE, stdin);
-		file2hex(chunk);
+		bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin);
+		file2hex(chunk, bytes_read);
 	}
 	else if (strncmp(option, "-f", 2) == 0) {
-		fread(chunk, 1, CHUNK_SIZE, stdin);
-		file2int(chunk);
+		bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin);
+		file2int(chunk, bytes_read);
 	}
 	else if (strncmp(option, "-H", 2) == 0) {
 		while ((bytes_read = fread(chunk, 1, CHUNK_SIZE, stdin)) > 0) {
@@ -468,10 +474,10 @@ int main(int argc, char **argv) {
 			printf("%s\n", bin2text(optarg, strlen(optarg)));
 			break;
 		case 'F':
-			file2hex(optarg);
+			file2hex(optarg, strlen(optarg));
 			break;
 		case 'f':
-			file2int(optarg);
+			file2int(optarg, strlen(optarg));
 			break;
 		case 'H':
 			printf("%s\n", hex2bin(optarg, strlen(optarg)));
