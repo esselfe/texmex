@@ -401,7 +401,6 @@ void ProcessStdin(char *option) {
 				printf("%02X", chunk[cnt]);
 		}
 	}
-	printf("\n");
 
 	exit(0);
 }
@@ -414,7 +413,7 @@ void CheckStdin(void) {
 	FD_ZERO(&read_fds);
 	FD_SET(STDIN_FILENO, &read_fds); // STDIN_FILENO is 0
 
-	// Set timeout to 0, which makes select non-blocking
+	// Set timeout to 250ms/0.25s to let i.e. cat process output
 	timeout.tv_sec = 0;  // seconds
 	timeout.tv_usec = 250000; // microseconds
 
