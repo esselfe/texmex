@@ -397,7 +397,7 @@ void CheckStdin(void) {
 
 	// Set timeout to 0, which makes select non-blocking
 	timeout.tv_sec = 0;  // seconds
-	timeout.tv_usec = 0; // microseconds
+	timeout.tv_usec = 250000; // microseconds
 
 	// Check if data is available on stdin
 	int ret = select(STDIN_FILENO + 1, &read_fds, NULL, NULL, &timeout);
